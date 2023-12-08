@@ -1,0 +1,91 @@
+---
+title: "Get Started"
+description: "A brief introduction to civ."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Get Started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This article is a brief introduction to ``civ``.
+
+
+```r
+library(civ)
+library(AER)
+set.seed(517938)
+```
+
+To illustrate ``civ`` on a simple example, consider the data generating process from the simulation of Wiemann (2023). The code snippet below draws a sample of size $n=800$.
+
+
+```r
+# Set seed
+set.seed(51944)
+# Sample parameters
+nobs = 800 # sample size
+C = 0.858 # first stage coefficient
+sgm_V = sqrt(0.81) # first stage error
+tau_X <- c(-0.5, 0.5) + 1 # second stage effects
+# Sample controls and instrument
+X <- sample(1:2, nobs, replace = T)
+Z <- model.matrix(~ 0 + as.factor(sample(1:20, nobs, replace = T)):as.factor(X))
+Z <- Z %*% c(1:ncol(Z))
+# Create the low-dimensional latent instrument
+Z0 <- Z %% 2 # underlying latent instrument
+# Draw first and second stage errors
+U_V <- matrix(rnorm(2 * nobs, 0, 1), nobs, 2) %*%
+  chol(matrix(c(1, 0.6, 0.6, sgm_V), 2, 2))
+# Draw treatment and outcome variables
+D <- Z0 * C + U_V[, 2]
+y <- D * tau_X[X] + U_V[, 1]
+```
+
+In the generated sample, the observed instrument takes 40 values with varying numbers of observations per instrument. Using only the observed instrument ``Z``, the goal is to estimate the in-sample average treatment effect:
+
+```r
+mean(tau_X[X])
+```
+
+```
+## [1] 1.0325
+```
+
+
+The  code snippet below estimates CIV where the first stage is restricted to ``K=2`` support points. The ``AER`` package is used to compute heteroskedasticity robust standard errors.
+
+
+
+```r
+# Compute CIV with K=2 and conduct inference
+civ_fit <- civ(y = y, D = D, Z = Z, X = as.factor(X), K = 2)
+civ_res <- summary(civ_fit, vcov = vcovHC(civ_fit$iv_fit, type = "HC1"))
+```
+
+The CIV estimate and the corresponding standard error are shown below. The associated 95\% confidence interval covers the true effect as indicated by the _t_-value of less than 1.96.
+
+```r
+c(Estimate = civ_res$coef[2, 1], "Std. Error" = civ_res$coef[2, 2],
+  "t-val." = abs(civ_res$coef[2, 1]-mean(tau_X[X]))/civ_res$coef[2, 2])
+```
+
+```
+##   Estimate Std. Error     t-val. 
+##  1.0063143  0.1086868  0.2409285
+```
+
+CIV uses a K-Conditional-Means (KCMeans) estimator in a first step to estimate the optimal instrument. To understand the estimated mapping of observed instruments to the support points of the latent instrument, it is useful to print the ``cluster_map`` attribute of the first-stage ``kcmeans_fit`` object (see also [``kcmeans``](https://thomaswiemann.com/kcmeans/) for details). The code snippet below prints the results for the first 10 values of the instrument. Here, ``x`` denotes the value of the observed instrument while ``cluster_x`` denotes the association with the estimated optimal instrument.
+
+```r
+t(head(civ_fit$kcmeans_fit$cluster_map[, c(1, 4)], 10))
+```
+
+```
+##           [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+## x           26   20   10   32   23   12    7   25   33    21
+## cluster_x    1    1    1    1    2    1    2    2    2     2
+```
+
+# References
+Wiemann T (2023). "Optimal Categorical Instruments." https://arxiv.org/abs/2311.17021

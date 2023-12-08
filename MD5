@@ -1,0 +1,15 @@
+cb1e2778ba13200c920aa00ea4a58b82 *DESCRIPTION
+c99bb615a2ab3f5488558e74d74a1dbe *NAMESPACE
+e64dbbf6f6d695ea8d166f38d06dd881 *NEWS.md
+60d9ec37a147df71bae79c496a7b1487 *R/civ.R
+9358a4f2ff6b4620c9b92314514192e0 *README.md
+5f4bb1a553aa0d5d251e095a3f257c89 *build/vignette.rds
+19544894527e0595446575d225fae72a *inst/doc/civ.Rmd
+3e4b7944ec9266e5e4a855dbe4f0d704 *inst/doc/civ.html
+a7eaac93214a2eb2fcfe8d7ebb0c1fad *man/civ.Rd
+1f196ea500073190f1ca1941365b2a80 *man/figures/unnamed-chunk-4-1.png
+17a6294ae93dc7b24f6623ffa90f7145 *man/figures/unnamed-chunk-5-1.png
+ef36174401034a81d00856120227b463 *man/summary.civ.Rd
+e04719da964323ae39c4b8f76c5e2f56 *tests/testthat.R
+29f71ee51ae926412dfd966f9d0f71d2 *tests/testthat/test-civ.R
+19544894527e0595446575d225fae72a *vignettes/civ.Rmd
